@@ -1,7 +1,8 @@
 N = 100;
 dx = 1/(N);
 x = linspace(dx, 1-dx, N-1);
-f = @(t) 1;
+%f = @(t) 1;
+intf = @(x) x^2/2; 
 
 function x = bj(b,t)
 	if t < (1/3)
@@ -31,7 +32,7 @@ end
 
 B = @(b) arrayfun(@(t) bj(b,t),x); 
 dB = @(i) arrayfun(@(t) grad(t,i),x);
-F = arrayfun(@(t) f(t), x);
+F = arrayfun(@(t) intf(t), x);
 
 %F(1) = 0;
 %F(end) = 0;
@@ -51,24 +52,31 @@ D = D*(1/dx)^2;
 % U = (B(b)*D)\W;
 % bestäm b_i nummeriskt
 % bestäm B från (b1,b2)
-delta = 0.1;
+delta = 0.5;
 L = @(U,A,b) (transpose(F)*(U+A)-transpose(B(b)*D*U)*D*A);
 % B is symmetric
 %grad_L = transpose(DU)*dB(b)*D*A*dx;
 
 
+it = 0;
+iters = [];
+total = [];
 
 b = [0.2 0.2];
 
 bb = B(b);
 
 err = 1;
-tol = 1e-4;
+tol = 1e-6;
 while err > tol
     W = D\F'; 
 
 
     U = (diag(B(b))*D)\W;
+
+    iters(end+1) = it;
+    total(end+1) = (F)*U*dx;
+    it = it + 1;
     %U(1) = 0;
     %U(end) = 0;
 
@@ -90,3 +98,11 @@ while err > tol
 end
 
 disp(b);
+
+disp(1-b(1)-b(2));
+
+plot(iters, total);
+xlabel("Iteration");
+ylabel("F^T*U*dx");
+%title("g = 1, a(x) = 1+x, f(x) = 0")
+%legend("u(x) Temperature","exact solution");
